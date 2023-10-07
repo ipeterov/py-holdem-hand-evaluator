@@ -1,21 +1,21 @@
 use crate::constants::*;
 use ::holdem_hand_evaluator_rs::Hand;
-use rand::seq::IteratorRandom;
+use fastrand::choose_multiple;
 
 pub struct MonteCarloSimulation {
     my_cards: Vec<usize>,
     common_cards: Vec<usize>,
     unseen_cards: Vec<usize>,
-    other_player_count: i8,
+    other_player_count: usize,
     n_rounds: i32,
-    cards_to_deal: i8,
+    cards_to_deal: usize,
 }
 
 impl MonteCarloSimulation {
     pub fn new(
         my_cards: &String,
         common_cards: &String,
-        other_player_count: i8,
+        other_player_count: usize,
         n_rounds: i32,
     ) -> MonteCarloSimulation {
         let my_cards_vector = Self::parse_cards(&my_cards);
@@ -32,10 +32,10 @@ impl MonteCarloSimulation {
             unseen_cards.push(usize_card);
         }
 
-        let for_me = PLAYER_CARDS - my_cards_vector.len() as i8;
-        let for_players = other_player_count * PLAYER_CARDS;
-        let for_common = COMMON_CARDS - common_cards_vector.len() as i8;
-        let cards_to_deal = for_me + for_players + for_common;
+        let for_me: usize = PLAYER_CARDS - my_cards_vector.len();
+        let for_players: usize = other_player_count * PLAYER_CARDS;
+        let for_common: usize = COMMON_CARDS - common_cards_vector.len();
+        let cards_to_deal: usize = for_me + for_players + for_common;
 
         MonteCarloSimulation {
             my_cards: my_cards_vector,
@@ -101,56 +101,44 @@ impl MonteCarloSimulation {
 
     pub fn run_simulation_round(&self) -> i8 {
         // "Shuffle" the cards and take out just as many as we need
-        let mut deck: Vec<usize> = self
-            .unseen_cards
-            .iter()
-            .cloned()
-            .choose_multiple(&mut rand::thread_rng(), self.cards_to_deal as usize);
-
-        // Deal ourselves up to PLAYER_CARDS cards
-        let mut my_cards = self.my_cards.clone();
-        for _ in 0..PLAYER_CARDS - my_cards.len() as i8 {
-            my_cards.push(deck.pop().expect("Didn't get enough cards in deck"));
-        }
+        let mut deck: Vec<usize> =
+            choose_multiple(self.unseen_cards.iter().cloned(), self.cards_to_deal);
 
         // Deal common cards up to COMMON_CARDS cards
         let mut common_cards = self.common_cards.clone();
-        for _ in 0..COMMON_CARDS - common_cards.len() as i8 {
+        for _ in 0..COMMON_CARDS - common_cards.len() {
             common_cards.push(deck.pop().expect("Didn't get enough cards in deck"));
         }
 
-        let mut other_player_cards: Vec<Vec<usize>> = vec![];
+        // Deal ourselves up to PLAYER_CARDS cards
+        let mut my_cards = self.my_cards.clone();
+        for _ in 0..PLAYER_CARDS - my_cards.len() {
+            my_cards.push(deck.pop().expect("Didn't get enough cards in deck"));
+        }
+        my_cards.extend_from_slice(common_cards.as_slice());
+
+        let mut other_players_cards: Vec<Vec<usize>> = vec![];
         for _ in 0..self.other_player_count {
             let mut player_cards: Vec<usize> = vec![];
             for _ in 0..PLAYER_CARDS {
                 player_cards.push(deck.pop().expect("Didn't get enough cards in deck"));
             }
-            other_player_cards.push(player_cards);
+            player_cards.extend_from_slice(common_cards.as_slice());
+            other_players_cards.push(player_cards);
         }
 
-        if Self::is_win_for_me(my_cards, common_cards, other_player_cards) {
+        if Self::is_win_for_me(my_cards, other_players_cards) {
             return 1;
-        } else {
-            return 0;
-        };
+        }
+        return 0;
     }
 
-    fn is_win_for_me(
-        my_cards: Vec<usize>,
-        common_cards: Vec<usize>,
-        other_player_cards: Vec<Vec<usize>>,
-    ) -> bool {
-        let my_hand = Hand::new();
-        for card in my_cards.iter().chain(common_cards.iter()) {
-            my_hand.add_card(*card);
-        }
+    fn is_win_for_me(my_cards: Vec<usize>, other_players_cards: Vec<Vec<usize>>) -> bool {
+        let my_hand = Hand::from_slice(my_cards.as_slice());
         let my_rank = my_hand.evaluate();
 
-        for player_cards in other_player_cards {
-            let player_hand = Hand::new();
-            for card in player_cards.iter().chain(common_cards.iter()) {
-                player_hand.add_card(*card);
-            }
+        for player_cards in other_players_cards {
+            let player_hand = Hand::from_slice(player_cards.as_slice());
             let player_rank = player_hand.evaluate();
             if player_rank > my_rank {
                 return false;

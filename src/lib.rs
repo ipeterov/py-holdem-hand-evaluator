@@ -9,7 +9,7 @@ use pyo3::prelude::*;
 pub fn calculate_equity(
     my_cards: String,
     common_cards: String,
-    other_player_count: i8,
+    other_player_count: usize,
     n_rounds: i32,
 ) -> f32 {
     let my_cards_string = String::from(my_cards);

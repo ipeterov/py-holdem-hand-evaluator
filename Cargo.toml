@@ -10,7 +10,7 @@ crate-type = ["cdylib", "lib"]
 
 [dependencies]
 holdem-hand-evaluator-rs = { git = "https://github.com/b-inary/holdem-hand-evaluator", package = "holdem-hand-evaluator" }
-rand = "0.8.5"
+fastrand = "2.0.1"
 itertools = "0.11.0"
 
 [dependencies.pyo3]
@@ -24,3 +24,5 @@ criterion = "0.5.1"
 name = "evaluator_benchmark"
 harness = false
 
+[profile.release]
+debug = true

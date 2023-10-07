@@ -22,7 +22,7 @@ fn main() {
     io::stdin()
         .read_line(&mut other_player_count_str)
         .expect("Failed to read line");
-    let other_player_count: i8 = other_player_count_str
+    let other_player_count: usize = other_player_count_str
         .trim()
         .parse()
         .expect("Have to input an integer");
