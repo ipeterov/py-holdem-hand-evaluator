@@ -35,7 +35,7 @@ source = "git+https://github.com/b-inary/holdem-hand-evaluator#d7b2a5bba4015f968
 
 [[package]]
 name = "holdem_hand_evaluator"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "holdem-hand-evaluator",
  "pyo3",
