@@ -28,9 +28,6 @@ jobs:
           - os: ubuntu-latest
             target: x86_64
             args: "--release"
-          - os: ubuntu-latest
-            target: i686
-            args: "--release"
     runs-on: ${{ matrix.platform.os }}
     steps:
       - uses: actions/checkout@v4
