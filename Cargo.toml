@@ -1,5 +1,5 @@
 [package]
-name = "py_holdem_hand_evaluator"
+name = "holdem_hand_evaluator"
 version = "0.1.0"
 edition = "2021"
 
