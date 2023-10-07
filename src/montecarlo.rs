@@ -100,13 +100,12 @@ impl MonteCarloSimulation {
     }
 
     pub fn run_simulation_round(&self) -> i8 {
-        let mut rng = rand::thread_rng();
         // "Shuffle" the cards and take out just as many as we need
         let mut deck: Vec<usize> = self
             .unseen_cards
             .iter()
             .cloned()
-            .choose_multiple(&mut rng, self.cards_to_deal as usize);
+            .choose_multiple(&mut rand::thread_rng(), self.cards_to_deal as usize);
 
         // Deal ourselves up to PLAYER_CARDS cards
         let mut my_cards = self.my_cards.clone();
@@ -141,19 +140,17 @@ impl MonteCarloSimulation {
         common_cards: Vec<usize>,
         other_player_cards: Vec<Vec<usize>>,
     ) -> bool {
-        let my_hand = Hand::from_slice(
-            [my_cards.as_slice(), common_cards.as_slice()]
-                .concat()
-                .as_slice(),
-        );
+        let my_hand = Hand::new();
+        for card in my_cards.iter().chain(common_cards.iter()) {
+            my_hand.add_card(*card);
+        }
         let my_rank = my_hand.evaluate();
 
         for player_cards in other_player_cards {
-            let player_hand = Hand::from_slice(
-                [player_cards.as_slice(), common_cards.as_slice()]
-                    .concat()
-                    .as_slice(),
-            );
+            let player_hand = Hand::new();
+            for card in player_cards.iter().chain(common_cards.iter()) {
+                player_hand.add_card(*card);
+            }
             let player_rank = player_hand.evaluate();
             if player_rank > my_rank {
                 return false;
