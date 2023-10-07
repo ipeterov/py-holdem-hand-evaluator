@@ -5,7 +5,7 @@ Python bindings for [holdem-hand-evaluator](https://github.com/ipeterov/py-holde
 ## Installation
 
 ```shell
-pip install holdem_hand_evaluator
+pip install holdem-hand-evaluator
 ```
 
 ### Usage
