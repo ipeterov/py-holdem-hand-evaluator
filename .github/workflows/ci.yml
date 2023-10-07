@@ -22,9 +22,6 @@ jobs:
           - os: windows-latest
             target: x64
             args: "--release"
-          - os: windows-latest
-            target: x86
-            args: "--release"
           - os: ubuntu-latest
             target: x86_64
             args: "--release"
