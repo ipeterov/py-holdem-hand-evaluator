@@ -249,13 +249,14 @@ source = "git+https://github.com/b-inary/holdem-hand-evaluator#d7b2a5bba4015f968
 
 [[package]]
 name = "holdem_hand_evaluator"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "criterion",
  "fastrand",
  "holdem-hand-evaluator",
  "itertools 0.11.0",
  "pyo3",
+ "rayon",
 ]
 
 [[package]]

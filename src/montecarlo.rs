@@ -1,6 +1,7 @@
 use crate::constants::*;
 use ::holdem_hand_evaluator_rs::Hand;
 use fastrand::choose_multiple;
+use rayon::prelude::*;
 
 pub struct MonteCarloSimulation {
     my_cards: Vec<usize>,
@@ -91,15 +92,15 @@ impl MonteCarloSimulation {
     }
 
     pub fn run_simulation(&self) -> f32 {
-        let mut wins: i32 = 0;
-        for _ in 0..self.n_rounds {
-            let result = self.run_simulation_round();
-            wins += result as i32;
-        }
+        let wins: i32 = (0..self.n_rounds)
+            .collect::<Vec<i32>>()
+            .par_iter()
+            .map(|_| self.run_simulation_round())
+            .sum();
         return wins as f32 / self.n_rounds as f32;
     }
 
-    pub fn run_simulation_round(&self) -> i8 {
+    pub fn run_simulation_round(&self) -> i32 {
         // "Shuffle" the cards and take out just as many as we need
         let mut deck: Vec<usize> =
             choose_multiple(self.unseen_cards.iter().cloned(), self.cards_to_deal);

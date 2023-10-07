@@ -12,6 +12,7 @@ crate-type = ["cdylib", "lib"]
 holdem-hand-evaluator-rs = { git = "https://github.com/b-inary/holdem-hand-evaluator", package = "holdem-hand-evaluator" }
 fastrand = "2.0.1"
 itertools = "0.11.0"
+rayon = "1.8.0"
 
 [dependencies.pyo3]
 version = "0.19.0"
