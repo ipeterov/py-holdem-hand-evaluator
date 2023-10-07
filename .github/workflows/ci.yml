@@ -19,16 +19,16 @@ jobs:
           - os: macos-latest
             target: universal2-apple-darwin
             args: "--release"
-          - os: macos-latest
+          - os: windows-latest
             target: x64
             args: "--release"
-          - os: macos-latest
+          - os: windows-latest
             target: x86
             args: "--release"
-          - os: macos-latest
+          - os: ubuntu-latest
             target: x86_64
             args: "--release"
-          - os: macos-latest
+          - os: ubuntu-latest
             target: i686
             args: "--release"
     runs-on: ${{ matrix.platform.os }}
