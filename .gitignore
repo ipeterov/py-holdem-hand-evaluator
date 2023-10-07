@@ -1,0 +1,7 @@
+*.pyc
+.idea
+target
+.vscode
+*.pyd
+venv/
+*.so
