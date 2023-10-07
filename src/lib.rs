@@ -2,11 +2,11 @@ mod constants;
 mod montecarlo;
 
 use crate::montecarlo::MonteCarloSimulation;
-use ::holdem_hand_evaluator::Hand;
+use ::holdem_hand_evaluator_rs::Hand;
 use pyo3::prelude::*;
 
 #[pyfunction]
-fn calculate_equity(
+pub fn calculate_equity(
     my_cards: String,
     common_cards: String,
     other_player_count: i8,
@@ -24,7 +24,7 @@ fn calculate_equity(
 }
 
 #[pyfunction]
-fn evaluate_hand(hand_str: String) -> u16 {
+pub fn evaluate_hand(hand_str: String) -> u16 {
     let hand = hand_str.parse::<Hand>().unwrap();
     return hand.evaluate();
 }

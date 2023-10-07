@@ -6,13 +6,21 @@ edition = "2021"
 [lib]
 name = "holdem_hand_evaluator"
 # "cdylib" is necessary to produce a shared library for Python to import from.
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "lib"]
 
 [dependencies]
-holdem-hand-evaluator = { git = "https://github.com/b-inary/holdem-hand-evaluator" }
+holdem-hand-evaluator-rs = { git = "https://github.com/b-inary/holdem-hand-evaluator", package = "holdem-hand-evaluator" }
 rand = "0.8.5"
 itertools = "0.11.0"
 
 [dependencies.pyo3]
 version = "0.19.0"
 features = ["abi3-py37"]
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "evaluator_benchmark"
+harness = false
+
