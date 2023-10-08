@@ -33,15 +33,13 @@ impl Cards {
         return new_cards;
     }
 
-    pub fn as_cards_iter(&self) -> impl Iterator<Item = usize> + '_ {
-        // All indexes of bits where value is 1
-        return (0..Self::TOTAL_CARDS).filter(|i| self.check_bit(*i));
-    }
-
-    pub fn as_hand(&self) -> Hand {
+    // This uses up the mask in the process, but that's fine
+    pub fn convert_to_hand(&mut self) -> Hand {
         let mut hand = Hand::new();
-        for card in self.as_cards_iter() {
-            hand = hand.add_card(card);
+        while self.mask != 0 {
+            let index = self.mask.trailing_zeros() as usize;
+            self.clear_bit(index);
+            hand = hand.add_card(index as usize);
         }
         return hand;
     }

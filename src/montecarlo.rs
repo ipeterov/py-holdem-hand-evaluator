@@ -101,22 +101,17 @@ impl MonteCarloSimulation {
             other_players_cards.push(player_cards);
         }
 
-        if Self::is_win_for_me(my_cards, other_players_cards) {
-            return 1;
-        }
-        return 0;
+        return Self::is_win_for_me(my_cards, other_players_cards);
     }
 
-    fn is_win_for_me(my_cards: Cards, other_players_cards: Vec<Cards>) -> bool {
-        let my_hand = my_cards.as_hand();
-        let my_rank = my_hand.evaluate();
-        for player_cards in other_players_cards {
-            let player_hand = player_cards.as_hand();
-            let player_rank = player_hand.evaluate();
+    fn is_win_for_me(mut my_cards: Cards, other_players_cards: Vec<Cards>) -> i32 {
+        let my_rank = my_cards.convert_to_hand().evaluate();
+        for mut player_cards in other_players_cards {
+            let player_rank = player_cards.convert_to_hand().evaluate();
             if player_rank > my_rank {
-                return false;
+                return 0;
             }
         }
-        return true;
+        return 1;
     }
 }
