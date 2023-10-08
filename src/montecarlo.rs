@@ -74,15 +74,15 @@ impl MonteCarloSimulation {
     }
 
     pub fn run_simulation(&self) -> f32 {
-        let wins: i32 = (0..self.n_rounds)
+        let wins: f32 = (0..self.n_rounds)
             .collect::<Vec<i32>>()
             .par_iter()
             .map(|_| self.run_simulation_round())
             .sum();
-        return wins as f32 / self.n_rounds as f32;
+        return wins / self.n_rounds as f32;
     }
 
-    pub fn run_simulation_round(&self) -> i32 {
+    pub fn run_simulation_round(&self) -> f32 {
         let mut deck = self.unseen_cards.clone();
 
         // Deal common cards up to COMMON_CARDS cards
@@ -101,17 +101,25 @@ impl MonteCarloSimulation {
             other_players_cards.push(player_cards);
         }
 
-        return Self::is_win_for_me(my_cards, other_players_cards);
+        return Self::my_pot_share(my_cards, other_players_cards);
     }
 
-    fn is_win_for_me(mut my_cards: Cards, other_players_cards: Vec<Cards>) -> i32 {
+    fn my_pot_share(mut my_cards: Cards, other_players_cards: Vec<Cards>) -> f32 {
         let my_rank = my_cards.convert_to_hand().evaluate();
+        let mut drawn_hands = 0;
         for mut player_cards in other_players_cards {
             let player_rank = player_cards.convert_to_hand().evaluate();
             if player_rank > my_rank {
-                return 0;
+                return 0f32;
+            } else if player_rank == my_rank {
+                drawn_hands += 1;
             }
         }
-        return 1;
+
+        if drawn_hands != 0 {
+            return 1f32 / drawn_hands as f32;
+        }
+
+        return 1f32;
     }
 }
