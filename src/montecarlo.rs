@@ -1,58 +1,40 @@
+use crate::bitmask_cards::Cards;
 use crate::constants::*;
-use ::holdem_hand_evaluator_rs::Hand;
-use fastrand::choose_multiple;
 use rayon::prelude::*;
 
 pub struct MonteCarloSimulation {
-    my_cards: Vec<usize>,
-    common_cards: Vec<usize>,
-    unseen_cards: Vec<usize>,
+    my_cards: Cards,
+    common_cards: Cards,
+    unseen_cards: Cards,
     other_player_count: usize,
     n_rounds: i32,
-    cards_to_deal: usize,
 }
 
 impl MonteCarloSimulation {
     pub fn new(
-        my_cards: &String,
-        common_cards: &String,
+        my_cards_string: &String,
+        common_cards_string: &String,
         other_player_count: usize,
         n_rounds: i32,
     ) -> MonteCarloSimulation {
-        let my_cards_vector = Self::parse_cards(&my_cards);
-        let common_cards_vector = Self::parse_cards(&common_cards);
-        let mut unseen_cards: Vec<usize> = vec![];
-        for card in 0..52 {
-            let usize_card = card as usize;
-            if my_cards_vector.contains(&usize_card) {
-                continue;
-            }
-            if common_cards_vector.contains(&usize_card) {
-                continue;
-            }
-            unseen_cards.push(usize_card);
-        }
-
-        let for_me: usize = PLAYER_CARDS - my_cards_vector.len();
-        let for_players: usize = other_player_count * PLAYER_CARDS;
-        let for_common: usize = COMMON_CARDS - common_cards_vector.len();
-        let cards_to_deal: usize = for_me + for_players + for_common;
-
+        let my_cards = Self::parse_cards(&my_cards_string);
+        let common_cards = Self::parse_cards(&common_cards_string);
+        let seen_cards = my_cards.combined(&common_cards);
+        let unseen_cards = seen_cards.inverted();
         MonteCarloSimulation {
-            my_cards: my_cards_vector,
-            common_cards: common_cards_vector,
+            my_cards,
+            common_cards,
             unseen_cards,
             other_player_count,
             n_rounds,
-            cards_to_deal,
         }
     }
 
-    fn parse_cards(cards: &String) -> Vec<usize> {
-        return cards
+    fn parse_cards(cards: &String) -> Cards {
+        let cards_iter = cards
             .split_whitespace()
-            .map(|x| Self::convert_str_card_to_usize(x).expect("Error"))
-            .collect();
+            .map(|x| Self::convert_str_card_to_usize(x).expect("Error"));
+        return Cards::from_cards_iter(cards_iter);
     }
 
     fn convert_str_card_to_usize(str_card: &str) -> Result<usize, String> {
@@ -101,30 +83,21 @@ impl MonteCarloSimulation {
     }
 
     pub fn run_simulation_round(&self) -> i32 {
-        // "Shuffle" the cards and take out just as many as we need
-        let mut deck: Vec<usize> =
-            choose_multiple(self.unseen_cards.iter().cloned(), self.cards_to_deal);
+        let mut deck = self.unseen_cards.clone();
 
         // Deal common cards up to COMMON_CARDS cards
         let mut common_cards = self.common_cards.clone();
-        for _ in 0..COMMON_CARDS - common_cards.len() {
-            common_cards.push(deck.pop().expect("Didn't get enough cards in deck"));
-        }
+        common_cards.combine(&deck.take_n_cards(COMMON_CARDS - common_cards.len()));
 
         // Deal ourselves up to PLAYER_CARDS cards
         let mut my_cards = self.my_cards.clone();
-        for _ in 0..PLAYER_CARDS - my_cards.len() {
-            my_cards.push(deck.pop().expect("Didn't get enough cards in deck"));
-        }
-        my_cards.extend_from_slice(common_cards.as_slice());
+        my_cards.combine(&deck.take_n_cards(PLAYER_CARDS - my_cards.len()));
+        my_cards.combine(&common_cards);
 
-        let mut other_players_cards: Vec<Vec<usize>> = vec![];
+        let mut other_players_cards: Vec<Cards> = vec![];
         for _ in 0..self.other_player_count {
-            let mut player_cards: Vec<usize> = vec![];
-            for _ in 0..PLAYER_CARDS {
-                player_cards.push(deck.pop().expect("Didn't get enough cards in deck"));
-            }
-            player_cards.extend_from_slice(common_cards.as_slice());
+            let mut player_cards = deck.take_n_cards(PLAYER_CARDS);
+            player_cards.combine(&common_cards);
             other_players_cards.push(player_cards);
         }
 
@@ -134,12 +107,11 @@ impl MonteCarloSimulation {
         return 0;
     }
 
-    fn is_win_for_me(my_cards: Vec<usize>, other_players_cards: Vec<Vec<usize>>) -> bool {
-        let my_hand = Hand::from_slice(my_cards.as_slice());
+    fn is_win_for_me(my_cards: Cards, other_players_cards: Vec<Cards>) -> bool {
+        let my_hand = my_cards.as_hand();
         let my_rank = my_hand.evaluate();
-
         for player_cards in other_players_cards {
-            let player_hand = Hand::from_slice(player_cards.as_slice());
+            let player_hand = player_cards.as_hand();
             let player_rank = player_hand.evaluate();
             if player_rank > my_rank {
                 return false;
