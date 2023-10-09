@@ -55,7 +55,8 @@ impl Cards {
 
             let index = fastrand::usize(0..Self::TOTAL_CARDS);
 
-            // Will take quite long if there are few cards left
+            // Will take quite long if there are few cards left, but it's ok because
+            // typically there are 32 (8 players, last card) to 50 (first card) cards left
             if !self.check_bit(index) {
                 continue;
             }
