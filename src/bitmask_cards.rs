@@ -39,7 +39,7 @@ impl Cards {
         while self.mask != 0 {
             let index = self.mask.trailing_zeros() as usize;
             self.clear_bit(index);
-            hand = hand.add_card(index as usize);
+            hand = hand.add_card(index);
         }
         return hand;
     }
