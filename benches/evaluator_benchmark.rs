@@ -3,7 +3,7 @@ use holdem_hand_evaluator::calculate_equity;
 
 fn equity(c: &mut Criterion) {
     c.bench_function("equity", |b| {
-        b.iter(|| calculate_equity(String::from("Ac Kc"), String::from("2h 3h"), 1, 1000))
+        b.iter(|| calculate_equity(String::from("Ac Kc"), String::from("2h 3h"), 1, 50000))
     });
 }
 
