@@ -93,21 +93,12 @@ impl MonteCarloSimulation {
         let mut my_cards = self.my_cards.clone();
         my_cards.combine(&deck.take_n_cards(PLAYER_CARDS - my_cards.len()));
         my_cards.combine(&common_cards);
+        let my_rank = my_cards.convert_to_hand().evaluate();
 
-        let mut other_players_cards: Vec<Cards> = vec![];
+        let mut drawn_hands = 0;
         for _ in 0..self.other_player_count {
             let mut player_cards = deck.take_n_cards(PLAYER_CARDS);
             player_cards.combine(&common_cards);
-            other_players_cards.push(player_cards);
-        }
-
-        return Self::my_pot_share(my_cards, other_players_cards);
-    }
-
-    fn my_pot_share(mut my_cards: Cards, other_players_cards: Vec<Cards>) -> f32 {
-        let my_rank = my_cards.convert_to_hand().evaluate();
-        let mut drawn_hands = 0;
-        for mut player_cards in other_players_cards {
             let player_rank = player_cards.convert_to_hand().evaluate();
             if player_rank > my_rank {
                 return 0f32;
